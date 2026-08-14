@@ -88,8 +88,14 @@
     display:grid; place-items:center;
     cursor:pointer; padding:0;
   }
-  .player-skip-btn svg { width:22px; height:22px; display:block; }
-  .player-skip-btn:hover { color:#e9b94a; border-color:rgba(233,185,74,0.65); }
+  .player-skip-btn img {
+    width:22px; height:22px; display:block;
+    filter:invert(1);
+  }
+  .player-skip-btn:hover { border-color:rgba(233,185,74,0.65); }
+  .player-skip-btn:hover img {
+    filter:invert(78%) sepia(42%) saturate(650%) hue-rotate(358deg) brightness(101%);
+  }
   .player-skip-btn:focus-visible { box-shadow:0 0 0 2px rgba(233,185,74,0.85); }
   .player-meta { flex:1; min-width:0; }
   .player-title {
@@ -231,18 +237,10 @@
       </button>
       <div class="player-skip">
         <button class="player-skip-btn" type="button" data-skip="-10" aria-label="Back 10 seconds">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8.2 7.1A7.2 7.2 0 1 0 12 4.8"/>
-            <path fill="currentColor" d="M8.4 3.2v4.6L4.2 6.1z"/>
-            <text x="12" y="15.2" text-anchor="middle" fill="currentColor" stroke="none" font-size="7.2" font-family="JetBrains Mono, ui-monospace, monospace" font-weight="600">10</text>
-          </svg>
+          <img src="assets/skip_back_10.svg" width="22" height="22" alt="" />
         </button>
         <button class="player-skip-btn" type="button" data-skip="10" aria-label="Forward 10 seconds">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.8 7.1A7.2 7.2 0 1 1 12 4.8"/>
-            <path fill="currentColor" d="M15.6 3.2v4.6L19.8 6.1z"/>
-            <text x="12" y="15.2" text-anchor="middle" fill="currentColor" stroke="none" font-size="7.2" font-family="JetBrains Mono, ui-monospace, monospace" font-weight="600">10</text>
-          </svg>
+          <img src="assets/skip_forward_10.svg" width="22" height="22" alt="" />
         </button>
       </div>
       <div class="player-meta">
