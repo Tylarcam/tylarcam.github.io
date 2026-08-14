@@ -68,7 +68,7 @@
     position:relative;
     z-index:4;
   }
-  .player-row { display:flex; align-items:center; gap:14px; }
+  .player-row { display:flex; align-items:center; gap:10px; }
   .player-play {
     width:48px; height:48px; flex-shrink:0;
     border-radius:12px; border:1px solid rgba(255,255,255,0.18);
@@ -80,6 +80,17 @@
   .player-play .icon-pause { display:none; }
   .player-play.is-playing .icon-play { display:none; }
   .player-play.is-playing .icon-pause { display:block; }
+  .player-skip { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .player-skip-btn {
+    width:40px; height:40px; flex-shrink:0;
+    border-radius:10px; border:1px solid rgba(255,255,255,0.18);
+    background:rgba(21,20,15,0.45); color:#fff;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px; letter-spacing:0.02em;
+    cursor:pointer; padding:0;
+  }
+  .player-skip-btn:hover { color:#e9b94a; border-color:rgba(233,185,74,0.65); }
+  .player-skip-btn:focus-visible { box-shadow:0 0 0 2px rgba(233,185,74,0.85); }
   .player-meta { flex:1; min-width:0; }
   .player-title {
     font-size:15px; font-weight:600; white-space:nowrap;
@@ -218,6 +229,10 @@
         <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.14v13.72L19 12 8 5.14z"/></svg>
         <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 5h3v14H7V5zm7 0h3v14h-3V5z"/></svg>
       </button>
+      <div class="player-skip">
+        <button class="player-skip-btn" type="button" data-skip="-10" aria-label="Back 10 seconds">−10</button>
+        <button class="player-skip-btn" type="button" data-skip="10" aria-label="Forward 10 seconds">+10</button>
+      </div>
       <div class="player-meta">
         <div class="player-title" data-od-id="player-title">Congo Square_RoughCut</div>
         <div class="player-time" data-od-id="player-time">0:00 / 0:00</div>
@@ -399,6 +414,11 @@
       if (audio.paused) audio.play();
       else audio.pause();
     });
+    player.querySelectorAll('[data-skip]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        skip(Number(btn.getAttribute('data-skip')));
+      });
+    });
     audio.addEventListener('play', function () { setPlaying(true); setWaiting(false); });
     audio.addEventListener('pause', function () { setPlaying(false); });
     audio.addEventListener('waiting', function () { setWaiting(true); });
@@ -440,11 +460,12 @@
     });
 
     player.addEventListener('keydown', function (e) {
-      if (e.target !== playBtn && e.target !== seek) return;
-      if (e.code === 'ArrowLeft') { skip(e.shiftKey ? -15 : -5); e.preventDefault(); }
-      else if (e.code === 'ArrowRight') { skip(e.shiftKey ? 15 : 5); e.preventDefault(); }
-      else if (e.code === 'PageDown' || e.code === 'KeyL') { skip(30); e.preventDefault(); }
-      else if (e.code === 'PageUp' || e.code === 'KeyJ') { skip(-15); e.preventDefault(); }
+      var onControl = e.target === playBtn || e.target === seek || e.target.classList.contains('player-skip-btn');
+      if (!onControl) return;
+      if (e.code === 'ArrowLeft') { skip(e.shiftKey ? -10 : -5); e.preventDefault(); }
+      else if (e.code === 'ArrowRight') { skip(e.shiftKey ? 10 : 5); e.preventDefault(); }
+      else if (e.code === 'PageDown' || e.code === 'KeyL') { skip(10); e.preventDefault(); }
+      else if (e.code === 'PageUp' || e.code === 'KeyJ') { skip(-10); e.preventDefault(); }
       else if (e.code === 'Home') { applySeek(0); seek.value = 0; paint(); e.preventDefault(); }
       else if (e.code === 'End') { applySeek(duration()); seek.value = duration(); paint(); e.preventDefault(); }
     });
