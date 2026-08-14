@@ -109,7 +109,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 120px;
+            width: 220px;
             gap: 8px;
             color: #f4f4f4;
             text-decoration: none;
@@ -139,6 +139,7 @@
         .file-label {
             font-size: 16px;
             letter-spacing: 0.02em;
+            white-space: nowrap;
         }
 
         .brand {
@@ -305,6 +306,10 @@
                 <img class="file-icon" src="assets/podcast_mic_icon.png" width="56" height="68" alt="" />
                 <span class="file-label">ep. 2_roughCut</span>
             </button>
+            <button class="file" type="button" data-open="AAA Late Breaking Poster" data-src="assets/Soundcestral%20Remembrance%20(4)_Poster.pdf">
+                <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
+                <span class="file-label">AAA Late Breaking Poster</span>
+            </button>
         </div>
 
         <div class="window" id="file-window" role="dialog" aria-label="ep. 2_roughCut">
@@ -341,6 +346,8 @@
         document.querySelectorAll("[data-open]").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 title.textContent = btn.dataset.open;
+                win.setAttribute("aria-label", btn.dataset.open);
+                frame.title = btn.dataset.open;
                 setMaximized(false);
                 frame.src = btn.dataset.src;
                 win.classList.add("open");
