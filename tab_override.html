@@ -121,20 +121,31 @@
             letter-spacing: 0.02em;
         }
 
-        /* File window overlay */
+        /* File window overlay — default is a fitted card, not fullscreen */
         .window {
             display: none;
             position: absolute;
             z-index: 4;
-            inset: 12px;
-            width: auto;
-            height: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(720px, calc(100% - 80px));
+            height: min(820px, calc(100% - 80px));
             background: #111;
             border: 1px solid #3a3a3a;
             box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
         }
 
         .window.open { display: flex; flex-direction: column; }
+
+        .window.maximized {
+            inset: 12px;
+            top: 12px;
+            left: 12px;
+            transform: none;
+            width: auto;
+            height: auto;
+        }
 
         .window-bar {
             display: flex;
@@ -144,8 +155,16 @@
             background: #1c1c1c;
             border-bottom: 1px solid #333;
             font-size: 12px;
+            flex: none;
         }
 
+        .window-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .window-max,
         .window-close {
             color: #ddd;
             background: #333;
@@ -153,6 +172,14 @@
             width: 22px;
             height: 22px;
             cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            font: inherit;
+        }
+
+        .window-max:hover,
+        .window-close:hover {
+            background: #444;
         }
 
         .window iframe {
@@ -169,7 +196,7 @@
         <div class="crt" aria-hidden="true"></div>
 
         <div class="files">
-            <button class="file" type="button" data-open="ep.2_roughCut" data-src="episode_02_card.html?v=5">
+            <button class="file" type="button" data-open="ep.2_roughCut" data-src="episode_02_card.html?v=6">
                 <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
                 <span class="file-label">ep.2_roughCut</span>
             </button>
@@ -178,7 +205,10 @@
         <div class="window" id="file-window" role="dialog" aria-label="ep.2_roughCut">
             <div class="window-bar">
                 <span id="window-title">ep.2_roughCut</span>
-                <button class="window-close" type="button" aria-label="Close">×</button>
+                <div class="window-controls">
+                    <button class="window-max" type="button" aria-label="Full screen" aria-pressed="false" title="Full screen">□</button>
+                    <button class="window-close" type="button" aria-label="Close">×</button>
+                </div>
             </div>
             <iframe id="window-frame" title="ep.2_roughCut"></iframe>
         </div>
@@ -188,17 +218,37 @@
         const win = document.getElementById("file-window");
         const frame = document.getElementById("window-frame");
         const title = document.getElementById("window-title");
+        const maxBtn = document.querySelector(".window-max");
+
+        function setMaximized(on) {
+            win.classList.toggle("maximized", on);
+            maxBtn.setAttribute("aria-pressed", on ? "true" : "false");
+            maxBtn.setAttribute("aria-label", on ? "Restore window" : "Full screen");
+            maxBtn.title = on ? "Restore window" : "Full screen";
+            maxBtn.textContent = on ? "❐" : "□";
+            requestAnimationFrame(function () {
+                if (frame.contentWindow) {
+                    frame.contentWindow.dispatchEvent(new Event("resize"));
+                }
+            });
+        }
 
         document.querySelectorAll("[data-open]").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 title.textContent = btn.dataset.open;
+                setMaximized(false);
                 frame.src = btn.dataset.src;
                 win.classList.add("open");
             });
         });
 
+        maxBtn.addEventListener("click", function () {
+            setMaximized(!win.classList.contains("maximized"));
+        });
+
         document.querySelector(".window-close").addEventListener("click", function () {
             win.classList.remove("open");
+            setMaximized(false);
             frame.src = "about:blank";
         });
     </script>

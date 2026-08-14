@@ -10,8 +10,8 @@
   body { font-family:'Inter Tight','Noto Sans SC',sans-serif; }
   .stage {
     width:100%; height:100%;
-    display:flex; align-items:flex-start; justify-content:center;
-    overflow-x:hidden; overflow-y:auto; padding:12px; box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; padding:12px; box-sizing:border-box;
   }
   .sizer { flex:none; }
   .poster { position:relative; width:1080px; max-width:none; height:auto; border-radius:32px; overflow:hidden; color:#fff; transform-origin:top left;
@@ -20,11 +20,11 @@
       radial-gradient(ellipse at 20% 100%, rgba(108,58,166,0.5), transparent 55%),
       linear-gradient(135deg,#c96442 0%,#15140f 60%,#1a0e2b 100%);
     display:grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 38%); grid-template-rows: auto auto; column-gap:0; row-gap:0; align-items:stretch;
-    padding:0 0 0 64px;
+    padding:0 0 0 40px;
     box-shadow:0 40px 120px -20px rgba(0,0,0,0.7);
   }
-  .poster-epibar { grid-column:1; grid-row:1; position:relative; z-index:3; padding:56px 36px 20px 0; }
-  .poster-copy { position:relative; z-index:3; display:flex; flex-direction:column; padding:0 36px 48px 0; min-width:0; grid-column:1; grid-row:2; }
+  .poster-epibar { grid-column:1; grid-row:1; position:relative; z-index:3; padding:28px 28px 8px 0; }
+  .poster-copy { position:relative; z-index:3; display:flex; flex-direction:column; padding:0 28px 28px 0; min-width:0; grid-column:1; grid-row:2; }
   .poster-photo { position:relative; margin:0; overflow:hidden; grid-column:2; grid-row:1 / span 2; align-self:stretch; justify-self:stretch; min-height:100%; }
   .poster-photo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
   .photo-cap {
@@ -36,8 +36,8 @@
   }
   .grain { position:absolute; inset:0; z-index:2; pointer-events:none; opacity:0.18; background-image:radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px); background-size:3px 3px; grid-column:1 / span 2; grid-row:1 / span 2; }
   .label { font-size:13px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; opacity:0.85; max-width:100%; }
-  .glyph { width:120px; height:120px; border-radius:32px; display:grid; place-items:center; background:rgba(255,255,255,0.08); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.18); }
-  h1 { font-family:'Inter Tight',sans-serif; font-weight:900; font-size:72px; line-height:0.98; letter-spacing:-0.04em; margin:0; }
+  .glyph { width:88px; height:88px; border-radius:24px; display:grid; place-items:center; background:rgba(255,255,255,0.08); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.18); }
+  h1 { font-family:'Inter Tight',sans-serif; font-weight:900; font-size:56px; line-height:0.98; letter-spacing:-0.04em; margin:0; }
   .em { font-family:Georgia, 'Noto Serif SC', serif; font-weight:700; font-style:italic; color:#e9b94a; }
   .feature { display:flex; align-items:flex-start; gap:18px; }
   .feature .ic { width:42px; height:42px; border-radius:12px; background:rgba(255,255,255,0.12); display:grid; place-items:center; font-size:18px; flex-shrink:0; font-weight:700; }
@@ -46,8 +46,8 @@
   .quote {
     font-family:Georgia, 'Noto Serif SC', serif;
     font-style:italic;
-    font-size:22px;
-    line-height:1.45;
+    font-size:18px;
+    line-height:1.4;
     opacity:0.92;
     margin:0;
   }
@@ -58,8 +58,8 @@
     margin-top:12px;
   }
   .player {
-    margin-top:28px;
-    padding:18px 18px 16px;
+    margin-top:16px;
+    padding:14px 16px 12px;
     border-radius:16px;
     background:rgba(255,255,255,0.08);
     backdrop-filter:blur(12px);
@@ -114,28 +114,28 @@
   <div class="poster-copy" data-od-id="poster-copy">
   <div class="flex items-center justify-start" data-od-id="poster-top" style="gap:20px">
     <div class="glyph" aria-hidden="true">
-      <span style="font-family:Georgia,serif; font-style:italic; font-size:78px; font-weight:700; color:#fff; line-height:1">TS</span>
+      <span style="font-family:Georgia,serif; font-style:italic; font-size:56px; font-weight:700; color:#fff; line-height:1">TS</span>
     </div>
     <div class="label">Travers'N Spaces</div>
   </div>
 
   <div style="margin:12px 0 0; flex:none" data-od-id="poster-title">
     <h1>Soundcestral<br><span class="em">Remembrance</span></h1>
-    <div style="font-size:24px; font-weight:500; opacity:0.92; margin-top:20px; max-width:560px; line-height:1.4">
+    <div style="font-size:18px; font-weight:500; opacity:0.92; margin-top:12px; max-width:560px; line-height:1.35">
       A conversation with <span class="em">Mama Sula</span> about Congo Square —
       New Orleans, Louisiana.
     </div>
     
   </div>
 
-  <div style="display:grid; grid-template-columns:1fr; gap:14px; margin:0" data-od-id="poster-themes">
-    <div class="feature" style="padding-top:28px"><div class="ic">◎</div><div><div class="t">Continuance</div><div class="d">Ritual, ceremony, and protection carried forward in place.</div></div></div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; margin:16px 0 0" data-od-id="poster-themes">
+    <div class="feature"><div class="ic">◎</div><div><div class="t">Continuance</div><div class="d">Ritual, ceremony, and protection carried forward in place.</div></div></div>
     <div class="feature"><div class="ic">◎</div><div><div class="t">Sacred Ground</div><div class="d">Where ancestral memory still breathes, sounds, and gathers.</div></div></div>
     <div class="feature"><div class="ic">◎</div><div><div class="t">Sound Healing </div><div class="d">Drumming and chants as living medicine — sound as archive.</div></div></div>
     <div class="feature"><div class="ic">◎</div><div><div class="t">Ancestral Memory</div><div class="d">Guardianship of Black memory and remembering the way home.</div></div></div>
   </div>
 
-  <div style="margin-top:28px; padding-top:28px; border-top:1px solid rgba(255,255,255,0.18)" data-od-id="poster-quote">
+  <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.18)" data-od-id="poster-quote">
     <blockquote class="quote">“Congo Square stands today as a sacred ground. It never has lost its appeal as a sacred ground or its power as a sacred ground.”</blockquote>
     <p class="quote-attr">— Mama Sula · Priestess of Mami Wata · Vice President of Congo Square Preservation Society</p>
   </div>
@@ -176,17 +176,21 @@
       var h = poster.offsetHeight;
       if (!w || !h) return;
       var pad = 24;
-      var scale = (stage.clientWidth - pad) / w;
+      var scale = Math.min(
+        (stage.clientWidth - pad) / w,
+        (stage.clientHeight - pad) / h
+      );
       sizer.style.width = w * scale + "px";
       sizer.style.height = h * scale + "px";
       poster.style.transform = "scale(" + scale + ")";
-      stage.style.alignItems = h * scale < stage.clientHeight - pad ? "center" : "flex-start";
+      stage.style.alignItems = "center";
     }
     window.addEventListener("resize", fit);
     window.addEventListener("load", fit);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     var img = poster.querySelector("img");
     if (img) img.addEventListener("load", fit);
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
     requestAnimationFrame(fit);
   })();
 
