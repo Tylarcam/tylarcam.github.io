@@ -4,12 +4,31 @@
     <meta charset="utf-8">
     <title>buildspace os</title>
     <style>
+        @font-face {
+            font-family: Terminus;
+            src: url("assets/fonts/TerminusTTF-Regular.ttf") format("truetype");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: Terminus;
+            src: url("assets/fonts/TerminusTTF-Bold.ttf") format("truetype");
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
         * { box-sizing: border-box; }
         html, body {
             margin: 0;
             height: 100%;
             background: #000;
-            font-family: "IBM Plex Mono", "SF Mono", ui-monospace, monospace;
+            font-family: Terminus, "Terminus TTF", "IBM Plex Mono", ui-monospace, monospace;
+            font-size: 16px;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: unset;
+            font-smooth: never;
             color: #eee;
             overflow: hidden;
         }
@@ -89,7 +108,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 88px;
+            width: 120px;
             gap: 8px;
             color: #f4f4f4;
             text-decoration: none;
@@ -117,8 +136,34 @@
         }
 
         .file-label {
-            font-size: 12px;
+            font-size: 16px;
             letter-spacing: 0.02em;
+        }
+
+        .upcoming {
+            position: absolute;
+            z-index: 3;
+            top: 48px;
+            left: 40px;
+            margin: 0;
+            max-width: min(420px, calc(100% - 160px));
+            color: #f4f4f4;
+            text-shadow: 0 1px 4px #000;
+        }
+
+        .upcoming-title {
+            margin: 0 0 12px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: lowercase;
+        }
+
+        .upcoming-list {
+            margin: 0;
+            padding-left: 1.15em;
+            font-size: 16px;
+            line-height: 1.7;
         }
 
         /* File window overlay — default is a fitted card, not fullscreen */
@@ -154,7 +199,7 @@
             padding: 8px 12px;
             background: #1c1c1c;
             border-bottom: 1px solid #333;
-            font-size: 12px;
+            font-size: 16px;
             flex: none;
         }
 
@@ -195,22 +240,31 @@
         <div class="wallpaper" aria-hidden="true"></div>
         <div class="crt" aria-hidden="true"></div>
 
+        <div class="upcoming">
+            <p class="upcoming-title">upcoming</p>
+            <ul class="upcoming-list">
+                <li>august 26: writing ch. 4</li>
+                <li>september 9th: editing ep. 3 hotel lincoln</li>
+                <li>september 23rd: editing ep. 4 mccorkle place</li>
+            </ul>
+        </div>
+
         <div class="files">
-            <button class="file" type="button" data-open="ep.2_roughCut" data-src="episode_02_card.html?v=10">
-                <img class="file-icon" src="assets/recordings_icon.png" width="56" height="68" alt="" />
-                <span class="file-label">ep.2_roughCut</span>
+            <button class="file" type="button" data-open="ep. 2_roughCut" data-src="episode_02_card.html?v=10">
+                <img class="file-icon" src="assets/podcast_mic_icon.png" width="56" height="68" alt="" />
+                <span class="file-label">ep. 2_roughCut</span>
             </button>
         </div>
 
-        <div class="window" id="file-window" role="dialog" aria-label="ep.2_roughCut">
+        <div class="window" id="file-window" role="dialog" aria-label="ep. 2_roughCut">
             <div class="window-bar">
-                <span id="window-title">ep.2_roughCut</span>
+                <span id="window-title">ep. 2_roughCut</span>
                 <div class="window-controls">
                     <button class="window-max" type="button" aria-label="Full screen" aria-pressed="false" title="Full screen">□</button>
                     <button class="window-close" type="button" aria-label="Close">×</button>
                 </div>
             </div>
-            <iframe id="window-frame" title="ep.2_roughCut"></iframe>
+            <iframe id="window-frame" title="ep. 2_roughCut"></iframe>
         </div>
     </div>
 
