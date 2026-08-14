@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>buildspace os</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&amp;display=swap" rel="stylesheet">
     <style>
         @font-face {
             font-family: Terminus;
@@ -140,11 +141,56 @@
             letter-spacing: 0.02em;
         }
 
+        .brand {
+            position: absolute;
+            z-index: 3;
+            top: 40px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #fff;
+            background: none;
+            border: 0;
+            padding: 0;
+        }
+
+        .brand-mark {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.55);
+            flex: none;
+        }
+
+        .brand-mark span {
+            font-family: Georgia, "Noto Serif", serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 28px;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .brand-wordmark {
+            font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            text-shadow: 0 1px 4px #000;
+        }
+
         .upcoming {
             position: absolute;
             z-index: 3;
-            top: 48px;
+            top: 50%;
             left: 40px;
+            transform: translateY(-50%);
             margin: 0;
             max-width: min(420px, calc(100% - 160px));
             color: #f4f4f4;
@@ -240,6 +286,11 @@
         <div class="wallpaper" aria-hidden="true"></div>
         <div class="crt" aria-hidden="true"></div>
 
+        <div class="brand" aria-label="Travers'n Spaces">
+            <div class="brand-mark" aria-hidden="true"><span>TS</span></div>
+            <div class="brand-wordmark">Travers'n Spaces</div>
+        </div>
+
         <div class="upcoming">
             <p class="upcoming-title">upcoming</p>
             <ul class="upcoming-list">
@@ -250,7 +301,7 @@
         </div>
 
         <div class="files">
-            <button class="file" type="button" data-open="ep. 2_roughCut" data-src="episode_02_card.html?v=10">
+            <button class="file" type="button" data-open="ep. 2_roughCut" data-src="episode_02_card.html?v=11">
                 <img class="file-icon" src="assets/podcast_mic_icon.png" width="56" height="68" alt="" />
                 <span class="file-label">ep. 2_roughCut</span>
             </button>
