@@ -89,17 +89,88 @@
     font-family:'JetBrains Mono',monospace;
     font-size:12px; opacity:0.7; margin-top:4px;
   }
+  .player-seek-wrap {
+    position:relative;
+    margin:14px 0 0;
+    height:14px;
+  }
+  .player-seek-track {
+    position:absolute; left:0; right:0; top:50%;
+    height:4px; margin-top:-2px;
+    background:rgba(255,255,255,0.18);
+    border-radius:999px;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .player-seek-buffered,
+  .player-seek-played {
+    position:absolute; inset:0 auto 0 0;
+    height:100%;
+    border-radius:999px;
+  }
+  .player-seek-buffered span {
+    position:absolute; top:0; bottom:0;
+    background:rgba(255,255,255,0.32);
+  }
+  .player-seek-played {
+    width:0;
+    background:#e9b94a;
+    z-index:1;
+  }
+  .player.is-waiting .player-seek-track {
+    background-image:repeating-linear-gradient(
+      -45deg,
+      rgba(255,255,255,0.18) 0 6px,
+      rgba(233,185,74,0.28) 6px 12px
+    );
+  }
   .player-seek {
     -webkit-appearance:none; appearance:none;
-    width:100%; height:4px; margin:14px 0 0; padding:0;
-    background:rgba(255,255,255,0.18); border-radius:999px; outline:none;
+    position:absolute; inset:0;
+    width:100%; height:100%; margin:0; padding:0;
+    background:transparent; border-radius:999px; outline:none;
+    cursor:pointer;
   }
+  .player-seek::-webkit-slider-runnable-track {
+    height:4px; background:transparent;
+  }
+  .player-seek::-moz-range-track {
+    height:4px; background:transparent; border:0;
+  }
+  .player-seek::-moz-range-progress { background:transparent; }
   .player-seek::-webkit-slider-thumb {
     -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
     background:#e9b94a; border:0; cursor:pointer;
   }
   .player-seek::-moz-range-thumb {
     width:14px; height:14px; border-radius:50%; background:#e9b94a; border:0; cursor:pointer;
+  }
+  .player-seek:focus-visible {
+    box-shadow:0 0 0 2px rgba(233,185,74,0.85);
+  }
+  .player-seek-tip {
+    position:absolute;
+    bottom:calc(100% + 6px);
+    transform:translateX(-50%);
+    padding:3px 6px;
+    border-radius:6px;
+    background:rgba(21,20,15,0.92);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    pointer-events:none;
+    opacity:0;
+    white-space:nowrap;
+    z-index:2;
+  }
+  .player-seek-wrap.is-scrubbing .player-seek-tip,
+  .player-seek-wrap:hover .player-seek-tip { opacity:1; }
+  .player-live {
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .player.is-waiting .player-seek-track { background-image:none; }
   }
 </style>
 </head>
@@ -152,7 +223,15 @@
         <div class="player-time" data-od-id="player-time">0:00 / 0:00</div>
       </div>
     </div>
-    <input class="player-seek" id="ep-seek" type="range" min="0" max="0" value="0" step="0.1" aria-label="Seek" />
+    <div class="player-seek-wrap" id="ep-seek-wrap">
+      <div class="player-seek-track" aria-hidden="true">
+        <div class="player-seek-buffered" id="ep-buffered"></div>
+        <div class="player-seek-played" id="ep-played"></div>
+      </div>
+      <input class="player-seek" id="ep-seek" type="range" min="0" max="0" value="0" step="any" aria-label="Seek" />
+      <div class="player-seek-tip" id="ep-seek-tip" aria-hidden="true">0:00</div>
+    </div>
+    <div class="player-live" id="ep-live" aria-live="polite"></div>
   </div>
   </div>
 
@@ -196,9 +275,17 @@
 
   (function () {
     var audio = document.getElementById('ep-audio');
+    var player = document.querySelector('.player');
     var playBtn = document.querySelector('.player-play');
     var timeEl = document.querySelector('.player-time');
     var seek = document.getElementById('ep-seek');
+    var wrap = document.getElementById('ep-seek-wrap');
+    var played = document.getElementById('ep-played');
+    var bufferedEl = document.getElementById('ep-buffered');
+    var tip = document.getElementById('ep-seek-tip');
+    var live = document.getElementById('ep-live');
+    var seekTimer = null;
+    var lastLive = '';
 
     function fmt(sec) {
       if (!isFinite(sec) || sec < 0) return '0:00';
@@ -207,32 +294,159 @@
       return m + ':' + String(s).padStart(2, '0');
     }
 
+    function spoken(sec) {
+      if (!isFinite(sec) || sec < 0) return '0 seconds';
+      var m = Math.floor(sec / 60);
+      var s = Math.floor(sec % 60);
+      var parts = [];
+      if (m) parts.push(m + (m === 1 ? ' minute' : ' minutes'));
+      parts.push(s + (s === 1 ? ' second' : ' seconds'));
+      return parts.join(', ');
+    }
+
+    function duration() {
+      var d = audio.duration;
+      return isFinite(d) && d > 0 ? d : 0;
+    }
+
+    function pct(t) {
+      var d = duration();
+      if (!d) return 0;
+      return Math.max(0, Math.min(100, (t / d) * 100));
+    }
+
+    function announce(msg) {
+      if (!msg || msg === lastLive) return;
+      lastLive = msg;
+      live.textContent = msg;
+    }
+
+    function displayTime() {
+      var t = seek.dataset.drag ? Number(seek.value) : (audio.currentTime || 0);
+      timeEl.textContent = fmt(t) + ' / ' + fmt(duration());
+      seek.setAttribute('aria-valuetext', spoken(t) + ' of ' + spoken(duration()));
+    }
+
+    function paintBuffered() {
+      var html = '';
+      var ranges = audio.buffered;
+      var d = duration();
+      if (!d) {
+        bufferedEl.innerHTML = '';
+        return;
+      }
+      for (var i = 0; i < ranges.length; i++) {
+        var start = pct(ranges.start(i));
+        var end = pct(ranges.end(i));
+        html += '<span style="left:' + start + '%;width:' + (end - start) + '%"></span>';
+      }
+      bufferedEl.innerHTML = html;
+    }
+
+    function paint() {
+      var t = seek.dataset.drag ? Number(seek.value) : (audio.currentTime || 0);
+      played.style.width = pct(t) + '%';
+      paintBuffered();
+      displayTime();
+    }
+
+    function applySeek(t) {
+      var d = duration();
+      if (!d) return;
+      audio.currentTime = Math.max(0, Math.min(d, t));
+    }
+
+    function skip(delta) {
+      applySeek((audio.currentTime || 0) + delta);
+      if (!seek.dataset.drag) seek.value = audio.currentTime || 0;
+      paint();
+    }
+
     function setPlaying(on) {
       playBtn.classList.toggle('is-playing', on);
       playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
       playBtn.setAttribute('aria-label', on ? 'Pause episode' : 'Play episode');
+      announce(on ? 'Playing' : 'Paused');
+    }
+
+    function setWaiting(on) {
+      player.classList.toggle('is-waiting', on);
+      if (on) announce('Buffering');
+    }
+
+    function tipFromClientX(clientX) {
+      var box = wrap.getBoundingClientRect();
+      if (!box.width) return;
+      var ratio = Math.max(0, Math.min(1, (clientX - box.left) / box.width));
+      var t = ratio * duration();
+      tip.textContent = fmt(t);
+      tip.style.left = (ratio * 100) + '%';
+    }
+
+    function endDrag() {
+      if (!seek.dataset.drag) return;
+      delete seek.dataset.drag;
+      wrap.classList.remove('is-scrubbing');
+      if (seekTimer) {
+        clearTimeout(seekTimer);
+        seekTimer = null;
+      }
+      applySeek(Number(seek.value));
+      paint();
     }
 
     playBtn.addEventListener('click', function () {
       if (audio.paused) audio.play();
       else audio.pause();
     });
-    audio.addEventListener('play', function () { setPlaying(true); });
+    audio.addEventListener('play', function () { setPlaying(true); setWaiting(false); });
     audio.addEventListener('pause', function () { setPlaying(false); });
-    audio.addEventListener('ended', function () { setPlaying(false); seek.value = 0; });
+    audio.addEventListener('waiting', function () { setWaiting(true); });
+    audio.addEventListener('playing', function () { setWaiting(false); });
+    audio.addEventListener('ended', function () {
+      setPlaying(false);
+      seek.value = 0;
+      paint();
+    });
     audio.addEventListener('loadedmetadata', function () {
-      seek.max = audio.duration || 0;
-      timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+      seek.max = duration();
+      seek.setAttribute('aria-valuemin', '0');
+      seek.setAttribute('aria-valuemax', String(Math.floor(duration())));
+      paint();
     });
     audio.addEventListener('timeupdate', function () {
       if (!seek.dataset.drag) seek.value = audio.currentTime || 0;
-      timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+      paint();
     });
-    seek.addEventListener('pointerdown', function () { seek.dataset.drag = '1'; });
-    seek.addEventListener('pointerup', function () { delete seek.dataset.drag; });
+    audio.addEventListener('progress', paintBuffered);
+
+    wrap.addEventListener('pointermove', function (e) {
+      tipFromClientX(e.clientX);
+    });
+    wrap.addEventListener('pointerdown', function () {
+      seek.dataset.drag = '1';
+      wrap.classList.add('is-scrubbing');
+    });
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+
     seek.addEventListener('input', function () {
-      audio.currentTime = Number(seek.value);
-      timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+      paint();
+      if (seekTimer) return;
+      seekTimer = setTimeout(function () {
+        seekTimer = null;
+        if (seek.dataset.drag) applySeek(Number(seek.value));
+      }, 80);
+    });
+
+    player.addEventListener('keydown', function (e) {
+      if (e.target !== playBtn && e.target !== seek) return;
+      if (e.code === 'ArrowLeft') { skip(e.shiftKey ? -15 : -5); e.preventDefault(); }
+      else if (e.code === 'ArrowRight') { skip(e.shiftKey ? 15 : 5); e.preventDefault(); }
+      else if (e.code === 'PageDown' || e.code === 'KeyL') { skip(30); e.preventDefault(); }
+      else if (e.code === 'PageUp' || e.code === 'KeyJ') { skip(-15); e.preventDefault(); }
+      else if (e.code === 'Home') { applySeek(0); seek.value = 0; paint(); e.preventDefault(); }
+      else if (e.code === 'End') { applySeek(duration()); seek.value = duration(); paint(); e.preventDefault(); }
     });
   })();
 </script>
