@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>buildspace os</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #000;
+            font-family: "IBM Plex Mono", "SF Mono", ui-monospace, monospace;
+            color: #eee;
+            overflow: hidden;
+        }
+
+        .desktop {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Layer 1: wallpaper */
+        .wallpaper {
+            position: absolute;
+            inset: 0;
+            background: #000 url("assets/Img7_Congo_Square_Nola.jpg") right center / cover no-repeat;
+            filter: brightness(0.42) saturate(0.8) contrast(1.15);
+            transform: scale(1.04);
+        }
+
+        /* Layer 2: CRT / computer-screen overlay */
+        .crt,
+        .crt::before,
+        .crt::after {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .crt {
+            z-index: 2;
+            box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.72);
+        }
+
+        .crt::before {
+            content: "";
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.035) 0px,
+                rgba(255, 255, 255, 0.035) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            mix-blend-mode: overlay;
+            animation: scan 8s linear infinite;
+        }
+
+        .crt::after {
+            content: "";
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+            animation: flicker 3.2s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            from { background-position: 0 0; }
+            to { background-position: 0 120px; }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.85; }
+            40% { opacity: 1; }
+            42% { opacity: 0.7; }
+            44% { opacity: 1; }
+        }
+
+        /* Layer 3: desktop files */
+        .files {
+            position: absolute;
+            z-index: 3;
+            top: 48px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .file {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 88px;
+            gap: 8px;
+            color: #f4f4f4;
+            text-decoration: none;
+            text-shadow: 0 1px 4px #000;
+            cursor: pointer;
+            background: none;
+            border: 0;
+            font: inherit;
+        }
+
+        .file:focus-visible .file-icon,
+        .file:hover .file-icon {
+            outline: 1px solid rgba(255, 255, 255, 0.55);
+            outline-offset: 2px;
+        }
+
+        .file-icon {
+            width: 56px;
+            height: 68px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: block;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        .file-label {
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        /* File window overlay */
+        .window {
+            display: none;
+            position: absolute;
+            z-index: 4;
+            inset: 12px;
+            width: auto;
+            height: auto;
+            background: #111;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+        }
+
+        .window.open { display: flex; flex-direction: column; }
+
+        .window-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #1c1c1c;
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+        }
+
+        .window-close {
+            color: #ddd;
+            background: #333;
+            border: 0;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .window iframe {
+            flex: 1;
+            width: 100%;
+            border: 0;
+            background: #0a0a0a;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <div class="wallpaper" aria-hidden="true"></div>
+        <div class="crt" aria-hidden="true"></div>
+
+        <div class="files">
+            <button class="file" type="button" data-open="ep.2_roughCut" data-src="episode_02_card.html?v=5">
+                <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
+                <span class="file-label">ep.2_roughCut</span>
+            </button>
+        </div>
+
+        <div class="window" id="file-window" role="dialog" aria-label="ep.2_roughCut">
+            <div class="window-bar">
+                <span id="window-title">ep.2_roughCut</span>
+                <button class="window-close" type="button" aria-label="Close">×</button>
+            </div>
+            <iframe id="window-frame" title="ep.2_roughCut"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const win = document.getElementById("file-window");
+        const frame = document.getElementById("window-frame");
+        const title = document.getElementById("window-title");
+
+        document.querySelectorAll("[data-open]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                title.textContent = btn.dataset.open;
+                frame.src = btn.dataset.src;
+                win.classList.add("open");
+            });
+        });
+
+        document.querySelector(".window-close").addEventListener("click", function () {
+            win.classList.remove("open");
+            frame.src = "about:blank";
+        });
+    </script>
+</body>
+</html>
