@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Traversing Spaces · Slides</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0a0a0a; color: #eee; overflow: hidden;
+    font-family: "Inter Tight", "Helvetica Neue", Arial, sans-serif; }
+  .app { display: flex; flex-direction: column; height: 100%; }
+  .stage { position: relative; flex: 1; display: flex; align-items: center; justify-content: center;
+    min-height: 0; padding: 8px; touch-action: pan-y; user-select: none; }
+  .stage img { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain;
+    box-shadow: 0 16px 48px rgba(0,0,0,.6); background: #111; }
+  .hit { position: absolute; top: 0; bottom: 0; width: 35%; cursor: pointer; background: none; border: 0; }
+  .hit.prev { left: 0; } .hit.next { right: 0; }
+  .bar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: #151515; border-top: 1px solid #2a2a2a; font-size: 14px; }
+  .group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .bar button, .bar a { color: #eee; background: #2a2a2a; border: 0; border-radius: 8px; padding: 8px 12px;
+    font: inherit; text-decoration: none; cursor: pointer; white-space: nowrap; min-height: 36px; display: inline-flex; align-items: center; }
+  .bar button:hover, .bar a:hover { background: #3a3a3a; }
+  .count { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+  .overlay { display: none; position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.82); }
+  .overlay.open { display: flex; flex-direction: column; }
+  .overlay-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1c1c1c; }
+  .overlay-bar button { color: #eee; background: #333; border: 0; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  .overlay iframe { flex: 1; width: 100%; border: 0; background: #0a0a0a; }
+  @media (max-width: 640px) { .hide-sm { display: none !important; } .bar { font-size: 13px; } }
+  :fullscreen .bar { opacity: 0; transition: opacity .3s; } :fullscreen .bar:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage">
+    <img id="slide" alt="Slide 1 of Traversing Spaces">
+    <button class="hit prev" aria-label="Previous slide" id="hitPrev"></button>
+    <button class="hit next" aria-label="Next slide" id="hitNext"></button>
+  </div>
+  <div class="bar">
+    <div class="group">
+      <button id="prev" aria-label="Previous slide">‹</button>
+      <span class="count" id="count">1 / 16</span>
+      <button id="next" aria-label="Next slide">›</button>
+    </div>
+    <div class="group">
+      <button id="ep2" title="Soundcestral Remembrance, Episode 2 (Congo Square, rough cut)">▶ ep. 2</button>
+      <a href="https://kuula.co/post/N5xQ7/collection/7qcrv" target="_blank" rel="noopener noreferrer" title="360° tour of McCorkle Place">360° McCorkle</a>
+      <a class="hide-sm" href="Traversing-Spaces-2026-10-06.pdf" target="_blank" rel="noopener">PDF</a>
+      <button id="fs" class="hide-sm" title="Full screen (F)">⛶</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay" role="dialog" aria-label="Episode 2">
+  <div class="overlay-bar"><span>Soundcestral Remembrance · ep. 2 (Congo Square, rough cut)</span><button id="closeEp">Close ×</button></div>
+  <iframe id="epFrame" title="Episode 2 player" allow="autoplay"></iframe>
+</div>
+<script>
+  const TOTAL = 16;
+  const img = document.getElementById("slide"), count = document.getElementById("count");
+  const src = n => "s-" + String(n).padStart(2, "0") + ".jpg";
+  let n = Math.min(TOTAL, Math.max(1, parseInt(location.hash.slice(1), 10) || 1));
+  function show(k) {
+    n = Math.min(TOTAL, Math.max(1, k));
+    img.src = src(n); img.alt = "Slide " + n + " of Traversing Spaces";
+    count.textContent = n + " / " + TOTAL;
+    history.replaceState(null, "", "#" + n);
+    [n + 1, n + 2].forEach(m => { if (m <= TOTAL) new Image().src = src(m); });
+  }
+  const next = () => show(n + 1), prev = () => show(n - 1);
+  document.getElementById("next").onclick = next; document.getElementById("hitNext").onclick = next;
+  document.getElementById("prev").onclick = prev; document.getElementById("hitPrev").onclick = prev;
+  const overlay = document.getElementById("overlay"), epFrame = document.getElementById("epFrame");
+  function openEp() { epFrame.src = "../../episode_02_card.html?v=11"; overlay.classList.add("open"); }
+  function closeEp() { overlay.classList.remove("open"); epFrame.src = "about:blank"; }
+  document.getElementById("ep2").onclick = openEp; document.getElementById("closeEp").onclick = closeEp;
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+  document.getElementById("fs").onclick = toggleFs;
+  document.addEventListener("keydown", e => {
+    if (overlay.classList.contains("open")) { if (e.key === "Escape") closeEp(); return; }
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === "Home") show(1); else if (e.key === "End") show(TOTAL);
+    else if (e.key === "f" || e.key === "F") toggleFs();
+  });
+  let x0 = null;
+  const stage = document.getElementById("stage");
+  stage.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) (dx < 0 ? next : prev)(); x0 = null; });
+  window.addEventListener("hashchange", () => show(parseInt(location.hash.slice(1), 10) || 1));
+  show(n);
+</script>
+</body>
+</html>
