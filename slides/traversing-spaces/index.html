@@ -14,6 +14,9 @@
     min-height: 0; padding: 8px; touch-action: pan-y; user-select: none; }
   .stage img { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain;
     box-shadow: 0 16px 48px rgba(0,0,0,.6); background: #111; }
+  .live { flex: 1; width: 100%; border: 0; background: #0a0a0a; min-height: 0; }
+  body.live-mode .stage, body.live-mode .nav { display: none !important; }
+  body:not(.live-mode) .live { display: none; }
   .hit { position: absolute; top: 0; bottom: 0; width: 35%; cursor: pointer; background: none; border: 0; }
   .hit.prev { left: 0; } .hit.next { right: 0; }
   .bar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -34,6 +37,8 @@
 </head>
 <body>
 <div class="app">
+  <iframe id="live" class="live" title="Traversing Spaces (live Google Slides)" allowfullscreen
+    src="https://docs.google.com/presentation/d/1d791zujnrtUKWGYVP8wMRMgjDvXxlEOu5hY4850zxOk/embed?start=false&loop=false&delayms=60000"></iframe>
   <div class="stage" id="stage">
     <img id="slide" alt="Slide 1 of Traversing Spaces">
     <button class="hit prev" aria-label="Previous slide" id="hitPrev"></button>
@@ -41,9 +46,10 @@
   </div>
   <div class="bar">
     <div class="group">
-      <button id="prev" aria-label="Previous slide">‹</button>
+      <button id="mode" title="Switch between the live Google deck and the offline copy">Offline copy</button>
+      <span class="nav group"><button id="prev" aria-label="Previous slide">‹</button>
       <span class="count" id="count">1 / 16</span>
-      <button id="next" aria-label="Next slide">›</button>
+      <button id="next" aria-label="Next slide">›</button></span>
     </div>
     <div class="group">
       <button id="ep2" title="Soundcestral Remembrance, Episode 2 (Congo Square, rough cut)">▶ ep. 2</button>
@@ -80,6 +86,7 @@
   document.getElementById("fs").onclick = toggleFs;
   document.addEventListener("keydown", e => {
     if (overlay.classList.contains("open")) { if (e.key === "Escape") closeEp(); return; }
+    if (document.body.classList.contains("live-mode")) return;
     if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
     else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
     else if (e.key === "Home") show(1); else if (e.key === "End") show(TOTAL);
@@ -90,6 +97,15 @@
   stage.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
   stage.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) (dx < 0 ? next : prev)(); x0 = null; });
   window.addEventListener("hashchange", () => show(parseInt(location.hash.slice(1), 10) || 1));
+  const modeBtn = document.getElementById("mode");
+  function setMode(live) {
+    document.body.classList.toggle("live-mode", live);
+    modeBtn.textContent = live ? "Offline copy" : "Live deck";
+    try { localStorage.setItem("ts-mode", live ? "live" : "offline"); } catch (e) {}
+  }
+  modeBtn.onclick = () => setMode(!document.body.classList.contains("live-mode"));
+  let saved = null; try { saved = localStorage.getItem("ts-mode"); } catch (e) {}
+  setMode(location.hash ? saved === "live" : saved !== "offline");
   show(n);
 </script>
 </body>
