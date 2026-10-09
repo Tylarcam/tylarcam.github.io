@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build Breakdown Prompt (Perplexity Computer)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 1.5rem; max-width: 52rem; line-height: 1.45; color: #111; }
+    h1 { font-size: 1.35rem; margin-bottom: 0.75rem; }
+    p.note { color: #444; margin-bottom: 1rem; }
+    pre { white-space: pre-wrap; word-wrap: break-word; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 1rem; font-size: 0.9rem; overflow-x: auto; }
+    button { margin: 0.5rem 0 1rem; padding: 0.4rem 0.8rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Build Breakdown Prompt (Perplexity Computer)</h1>
+  <p class="note">Copy the block below into the same Perplexity Computer task that made the build. Raw Markdown is also at <a href="./build-breakdown-prompt.md">build-breakdown-prompt.md</a>.</p>
+  <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('prompt').innerText)">Copy all</button>
+  <pre id="prompt"># Build Breakdown Prompt (Perplexity Computer)
+
+Paste this into the same Perplexity Computer task that made the build, so it can work from its own files, steps and outputs.
+
+```
+You built this project in this task. Now write a step-by-step technical build breakdown that colleagues in my university department can follow and learn from. Assume they're smart but haven't seen this build.
+
+Use only what actually happened in this task: the files, code, commands, tools, settings and outputs. Don't invent steps, versions or results. If something is unclear or you can't confirm it, write [UNVERIFIED] next to it.
+
+Structure:
+1. Overview: in 2–3 sentences, what was built, what it's for, and what the finished result does.
+2. Stack and inputs: every tool, service, library, model, data source and account used, with version or plan where known, and what each one did.
+3. Architecture: how the parts connect (frontend, backend, data, APIs, hosting), plus a simple Mermaid diagram.
+4. Build steps: numbered, in the order they happened. For each step give the goal, the exact action (prompt, command or setting), what it produced, and how you confirmed it worked.
+5. Key decisions: the main choices you made, the alternatives, and why you picked what you did.
+6. Problems and fixes: anything that broke or had to be redone, and how you resolved it.
+7. Reproduce it: the minimum steps for someone else to rebuild it from scratch, including prerequisites, setup, run and deploy.
+8. Limits and next steps: known gaps, costs, security or privacy notes, and what you'd improve.
+9. Glossary: plain definitions of any jargon used above.
+
+Style: plain language, short sentences, code and commands in code blocks, no marketing tone. Cut anything a reader doesn't need to rebuild or understand it.
+
+Deliver it as a downloadable Markdown file and a PDF, with a one-paragraph summary at the top that someone could read on its own.
+```
+
+**Tips:** Run it inside the original Computer task rather than a new chat. Check the steps marked [UNVERIFIED] before sharing. For non-technical readers, add "Write for non-engineers" to the style line.
+</pre>
+</body>
+</html>
