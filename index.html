@@ -280,6 +280,118 @@
             border: 0;
             background: #0a0a0a;
         }
+
+        .file-icon-wrap {
+            position: relative;
+            width: 56px;
+            height: 68px;
+        }
+
+        .file-icon-wrap .file-icon {
+            width: 56px;
+            height: 68px;
+        }
+
+        .lock-badge {
+            position: absolute;
+            right: -6px;
+            bottom: -4px;
+            font-size: 14px;
+            line-height: 1;
+            text-shadow: 0 1px 3px #000;
+            pointer-events: none;
+        }
+
+        .file-label .lock-hint {
+            opacity: 0.65;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        .pw-modal {
+            display: none;
+            position: absolute;
+            z-index: 5;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        .pw-modal.open { display: flex; }
+
+        .pw-card {
+            width: min(360px, calc(100% - 48px));
+            background: #111;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+            color: #eee;
+        }
+
+        .pw-card-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #1c1c1c;
+            border-bottom: 1px solid #333;
+            font-size: 16px;
+        }
+
+        .pw-card-body {
+            padding: 16px 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pw-card-body label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .pw-card-body input[type="password"] {
+            font: inherit;
+            font-size: 16px;
+            padding: 8px 10px;
+            background: #0a0a0a;
+            color: #eee;
+            border: 1px solid #444;
+            outline: none;
+        }
+
+        .pw-card-body input[type="password"]:focus {
+            border-color: rgba(255, 255, 255, 0.55);
+        }
+
+        .pw-error {
+            min-height: 1.2em;
+            font-size: 13px;
+            color: #f66;
+        }
+
+        .pw-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .pw-actions button {
+            font: inherit;
+            font-size: 14px;
+            padding: 6px 12px;
+            cursor: pointer;
+            color: #ddd;
+            background: #333;
+            border: 0;
+        }
+
+        .pw-actions button:hover { background: #444; }
+
+        .pw-actions .pw-ok {
+            background: #3a3a3a;
+        }
     </style>
 </head>
 <body>
@@ -314,9 +426,12 @@
                 <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
                 <span class="file-label">Traversing Spaces slides</span>
             </button>
-            <button class="file" type="button" data-open="Build Breakdown Prompt" data-src="prompts/build-breakdown-prompt.html">
-                <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
-                <span class="file-label">Build Breakdown Prompt</span>
+            <button class="file" type="button" data-open="Build Breakdown Script" data-src="prompts/build-breakdown-prompt.html" data-lock="05cb1e47605ae5cbf4d04b428a2a5086579ab13f80e7af57fe79faf58ff32ca4">
+                <span class="file-icon-wrap">
+                    <img class="file-icon" src="assets/doc_icon.png" width="56" height="68" alt="" />
+                    <span class="lock-badge" aria-hidden="true">🔒</span>
+                </span>
+                <span class="file-label">Build Breakdown Script <span class="lock-hint">locked</span></span>
             </button>
         </div>
 
@@ -329,6 +444,24 @@
                 </div>
             </div>
             <iframe id="window-frame" title="ep. 2_roughCut"></iframe>
+        </div>
+
+        <div class="pw-modal" id="pw-modal" role="dialog" aria-modal="true" aria-labelledby="pw-title">
+            <div class="pw-card">
+                <div class="pw-card-bar">
+                    <span id="pw-title">Build Breakdown Script</span>
+                    <button class="window-close" type="button" id="pw-close" aria-label="Close">×</button>
+                </div>
+                <form class="pw-card-body" id="pw-form">
+                    <label for="pw-input">password</label>
+                    <input id="pw-input" name="password" type="password" autocomplete="current-password" required />
+                    <div class="pw-error" id="pw-error" aria-live="polite"></div>
+                    <div class="pw-actions">
+                        <button type="button" id="pw-cancel">cancel</button>
+                        <button type="submit" class="pw-ok">unlock</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -351,15 +484,79 @@
             });
         }
 
+        const pwModal = document.getElementById("pw-modal");
+        const pwForm = document.getElementById("pw-form");
+        const pwInput = document.getElementById("pw-input");
+        const pwError = document.getElementById("pw-error");
+        let pendingBtn = null;
+
+        function openFile(btn) {
+            title.textContent = btn.dataset.open;
+            win.setAttribute("aria-label", btn.dataset.open);
+            frame.title = btn.dataset.open;
+            setMaximized(false);
+            frame.src = btn.dataset.src;
+            win.classList.add("open");
+        }
+
+        function closePw() {
+            pwModal.classList.remove("open");
+            pwError.textContent = "";
+            pwInput.value = "";
+            pendingBtn = null;
+        }
+
+        function showPw(btn) {
+            pendingBtn = btn;
+            document.getElementById("pw-title").textContent = btn.dataset.open;
+            pwError.textContent = "";
+            pwInput.value = "";
+            pwModal.classList.add("open");
+            requestAnimationFrame(function () { pwInput.focus(); });
+        }
+
+        async function sha256Hex(text) {
+            const data = new TextEncoder().encode(text);
+            const buf = await crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(buf)).map(function (b) {
+                return b.toString(16).padStart(2, "0");
+            }).join("");
+        }
+
         document.querySelectorAll("[data-open]").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                title.textContent = btn.dataset.open;
-                win.setAttribute("aria-label", btn.dataset.open);
-                frame.title = btn.dataset.open;
-                setMaximized(false);
-                frame.src = btn.dataset.src;
-                win.classList.add("open");
+                if (btn.dataset.lock) {
+                    showPw(btn);
+                    return;
+                }
+                openFile(btn);
             });
+        });
+
+        pwForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            if (!pendingBtn) return;
+            const guess = pwInput.value;
+            pwError.textContent = "";
+            try {
+                const hex = await sha256Hex(guess);
+                if (hex === pendingBtn.dataset.lock) {
+                    const btn = pendingBtn;
+                    closePw();
+                    openFile(btn);
+                } else {
+                    pwError.textContent = "wrong password";
+                    pwInput.select();
+                }
+            } catch (err) {
+                pwError.textContent = "could not check password";
+            }
+        });
+
+        document.getElementById("pw-cancel").addEventListener("click", closePw);
+        document.getElementById("pw-close").addEventListener("click", closePw);
+        pwModal.addEventListener("click", function (e) {
+            if (e.target === pwModal) closePw();
         });
 
         maxBtn.addEventListener("click", function () {
